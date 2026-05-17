@@ -46,6 +46,19 @@ export default function ParticipantsInput({
     );
   };
 
+  const normalizedNames = participants.map((participant) =>
+    participant.name.trim().toLowerCase(),
+  );
+
+  const isDuplicate = (participantName: string) => {
+    return (
+      participantName.trim() &&
+      normalizedNames.filter(
+        (name) => name === participantName.trim().toLowerCase(),
+      ).length > 1
+    );
+  };
+
   const removeParticipant = (_id: string) => {
     setParticipants((prev) =>
       prev.filter((participant) => participant.id !== _id),
@@ -64,6 +77,7 @@ export default function ParticipantsInput({
         </div>
 
         <Button
+        type="button"
           variant="outline"
           size="sm"
           onClick={addParticipant}
@@ -121,6 +135,7 @@ export default function ParticipantsInput({
               <Button
                 variant="ghost"
                 size="icon"
+                disabled={participants.length === 1}
                 onClick={() => removeParticipant(participant.id)}
                 className="
                   text-red-400
@@ -144,6 +159,11 @@ export default function ParticipantsInput({
                   updateParticipant(participant.id, e.target.value)
                 }
               />
+              {isDuplicate(participant.name) && (
+                <p className="mt-2 text-sm text-red-400">
+                  Participant name already exists.
+                </p>
+              )}
             </div>
           </div>
         ))}

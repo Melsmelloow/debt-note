@@ -70,7 +70,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
           </p>
         </div>
 
-        <Button variant="outline" size="sm" onClick={addItem} className="gap-2">
+        <Button variant="outline" size="sm" onClick={addItem} className="gap-2" type="button">
           <Plus className="h-4 w-4" />
           Add Item
         </Button>
@@ -108,6 +108,8 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
                 <Button
                   variant="ghost"
                   size="icon"
+                  type="button"
+                  disabled={items.length === 1}
                   onClick={() => removeItem(item.id)}
                   className="
                     text-red-400
@@ -124,6 +126,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
                   <Label>Item Name</Label>
 
                   <Input
+                    required
                     className="mt-2"
                     placeholder="Kebab Platter"
                     value={item.name}
@@ -137,6 +140,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
                   <Label>Quantity</Label>
 
                   <Input
+                    required
                     className="mt-2"
                     type="number"
                     min={1}
@@ -151,6 +155,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
                   <Label>Amount</Label>
 
                   <Input
+                    required
                     className="mt-2"
                     type="number"
                     min={0}

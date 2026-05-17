@@ -181,13 +181,11 @@ export default function Receipt({ transaction }: ReceiptProps) {
       )}
 
       <div className="space-y-6">
-<ActiveUsers
-  users={[
-    ...new Map(
-      activeUsers.map((user) => [user.id, user]),
-    ).values(),
-  ]}
-/>
+        <ActiveUsers
+          users={[
+            ...new Map(activeUsers.map((user) => [user.id, user])).values(),
+          ]}
+        />
 
         <ReceiptHeader transaction={transaction} />
 

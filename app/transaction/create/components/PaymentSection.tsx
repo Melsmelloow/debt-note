@@ -95,6 +95,7 @@ export default function PaymentSection({
                 <select
                   value={payToParticipantId}
                   onChange={(e) => setPayToParticipantId(e.target.value)}
+                  required
                   className="
                     mt-2
                     flex
@@ -161,6 +162,7 @@ export default function PaymentSection({
                 <Label>Payment Details</Label>
 
                 <Textarea
+                required
                   className="mt-2"
                   placeholder="
 GCash: 09171234567

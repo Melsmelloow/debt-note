@@ -53,58 +53,58 @@ export default function CreateTransactionPage() {
 
   const total = subtotal + Number(serviceCharge || 0);
 
-  const handleCreateTransaction = async () => {
-    const payload = {
-      place,
-      date,
+const handleCreateTransaction = async (
+  e: React.FormEvent<HTMLFormElement>,
+) => {
+  e.preventDefault();
 
-      participants: participants.map((participant) => ({
-        ...participant,
+  const payload = {
+    place,
+    date,
 
-        hasPaid: false,
-      })),
+    participants: participants.map((participant) => ({
+      ...participant,
+      hasPaid: false,
+    })),
 
-      items: items.map((item) => ({
-        ...item,
+    items: items.map((item) => ({
+      ...item,
+      subtotal: item.qty * item.amount,
+      assignedTo: [],
+    })),
 
-        subtotal: item.qty * item.amount,
+    serviceCharge,
 
-        assignedTo: [],
-      })),
+    subtotal,
+    total,
 
-      serviceCharge,
+    payToParticipantId,
 
-      subtotal,
-      total,
-
-      payToParticipantId,
-
-      paymentDetails,
-    };
-
-    try {
-      const response = await fetch("/api/transaction", {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify(payload),
-      });
-
-      console.log(response);
-      if (!response.ok) {
-        throw new Error("Failed to create transaction");
-      }
-
-      const data = await response.json();
-
-      router.push(`/transaction/${data._id}`);
-    } catch (error) {
-      console.error(error);
-    }
+    paymentDetails,
   };
+
+  try {
+    const response = await fetch("/api/transaction", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create transaction");
+    }
+
+    const data = await response.json();
+
+    router.push(`/transaction/${data._id}`);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   return (
     <div className="min-h-screen bg-background px-4 py-10">
@@ -137,18 +137,18 @@ export default function CreateTransactionPage() {
           </div>
 
           {/* Transaction Info */}
+          <form onSubmit={handleCreateTransaction}>
+            <section className="mt-8">
+              <h2 className="font-serif text-2xl tracking-wide">
+                Transaction Details
+              </h2>
 
-          <section className="mt-8">
-            <h2 className="font-serif text-2xl tracking-wide">
-              Transaction Details
-            </h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-sm text-muted-foreground">Place</label>
 
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="text-sm text-muted-foreground">Place</label>
-
-                <input
-                  className="
+                  <input
+                    className="
                     mt-2
                     flex
                     h-10
@@ -160,19 +160,21 @@ export default function CreateTransactionPage() {
                     px-3
                     py-2
                     text-sm
+          
                   "
-                  placeholder="Wolfgang Steakhouse"
-                  value={place}
-                  onChange={(e) => setPlace(e.target.value)}
-                />
-              </div>
+                    placeholder="Wolfgang Steakhouse"
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    required
+                  />
+                </div>
 
-              <div>
-                <label className="text-sm text-muted-foreground">Date</label>
+                <div>
+                  <label className="text-sm text-muted-foreground">Date</label>
 
-                <input
-                  type="date"
-                  className="
+                  <input
+                    type="date"
+                    className="
                     mt-2
                     flex
                     h-10
@@ -184,47 +186,49 @@ export default function CreateTransactionPage() {
                     px-3
                     py-2
                     text-sm
+                 
                   "
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
+            </section>
+
+            {/* Participants */}
+
+            <div className="mt-10">
+              <ParticipantsInput
+                participants={participants}
+                setParticipants={setParticipants}
+              />
             </div>
-          </section>
 
-          {/* Participants */}
+            {/* Items */}
 
-          <div className="mt-10">
-            <ParticipantsInput
-              participants={participants}
-              setParticipants={setParticipants}
-            />
-          </div>
+            <div className="mt-10">
+              <ItemsInput items={items} setItems={setItems} />
+            </div>
 
-          {/* Items */}
+            {/* Payment */}
 
-          <div className="mt-10">
-            <ItemsInput items={items} setItems={setItems} />
-          </div>
+            <div className="mt-10">
+              <PaymentSection
+                participants={participants}
+                payToParticipantId={payToParticipantId}
+                setPayToParticipantId={setPayToParticipantId}
+                paymentDetails={paymentDetails}
+                setPaymentDetails={setPaymentDetails}
+                serviceCharge={serviceCharge}
+                setServiceCharge={setServiceCharge}
+              />
+            </div>
 
-          {/* Payment */}
+            {/* Totals */}
 
-          <div className="mt-10">
-            <PaymentSection
-              participants={participants}
-              payToParticipantId={payToParticipantId}
-              setPayToParticipantId={setPayToParticipantId}
-              paymentDetails={paymentDetails}
-              setPaymentDetails={setPaymentDetails}
-              serviceCharge={serviceCharge}
-              setServiceCharge={setServiceCharge}
-            />
-          </div>
-
-          {/* Totals */}
-
-          <section
-            className="
+            <section
+              className="
               mt-10
               rounded-2xl
               border
@@ -232,41 +236,40 @@ export default function CreateTransactionPage() {
               bg-background/40
               p-6
             "
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Subtotal</span>
-
-                <span>₱{subtotal.toFixed(2)}</span>
-              </div>
-
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Service Charge</span>
-
-                <span>₱{serviceCharge.toFixed(2)}</span>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-border pt-4">
-                <span className="font-serif text-3xl tracking-wide">Total</span>
-
-                <span className="text-4xl font-black text-red-100">
-                  ₱{total.toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Submit */}
-
-          <div className="mt-10">
-            <Button
-              size="lg"
-              className="h-12 w-full text-base"
-              onClick={handleCreateTransaction}
             >
-              Create Case File
-            </Button>
-          </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Subtotal</span>
+
+                  <span>₱{subtotal.toFixed(2)}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Service Charge</span>
+
+                  <span>₱{serviceCharge.toFixed(2)}</span>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-border pt-4">
+                  <span className="font-serif text-3xl tracking-wide">
+                    Total
+                  </span>
+
+                  <span className="text-4xl font-black text-red-100">
+                    ₱{total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            {/* Submit */}
+
+            <div className="mt-10">
+              <Button size="lg" className="h-12 w-full text-base" type="submit">
+                Create Case File
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
