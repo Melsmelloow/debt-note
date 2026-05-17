@@ -268,7 +268,15 @@ export default function Receipt({ transaction }: ReceiptProps) {
         <div className="rounded-2xl border bg-white p-4 shadow-sm">
           <div
             ref={screenshotRef}
-            className="bg-white text-black rounded-xl p-5 hidden"
+            className="
+  fixed
+  left-[-9999px]
+  top-0
+  w-[800px]
+  bg-white
+  text-black
+  p-5
+"
             style={{
               backgroundColor: "#ffffff",
               color: "#000000",
