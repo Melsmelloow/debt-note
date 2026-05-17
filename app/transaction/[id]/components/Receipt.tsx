@@ -1,7 +1,8 @@
 "use client";
 
 import debounce from "lodash/debounce";
-import { useEffect, useMemo, useState } from "react";
+import { domToPng } from "modern-screenshot";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { socket } from "@/lib/socket";
 import { Participant, Transaction, TransactionItem } from "@/types/transaction";
@@ -18,6 +19,7 @@ type ReceiptProps = {
 
 export default function Receipt({ transaction }: ReceiptProps) {
   const [receiptItems, setReceiptItems] = useState(transaction.items);
+  const screenshotRef = useRef<HTMLDivElement>(null);
 
   const [participants, setParticipants] = useState(transaction.participants);
 
@@ -50,6 +52,47 @@ export default function Receipt({ transaction }: ReceiptProps) {
     // no valid stored user
     setShowUserSelector(true);
   }, [transaction]);
+
+  const handleShareScreenshot = async () => {
+    if (!screenshotRef.current) return;
+
+    try {
+      const dataUrl = await domToPng(screenshotRef.current, {
+        quality: 1,
+        scale: 2,
+        backgroundColor: "#ffffff",
+      });
+
+      // mobile share
+      if (navigator.share) {
+        const response = await fetch(dataUrl);
+
+        const blob = await response.blob();
+
+        const file = new File([blob], "receipt.png", {
+          type: "image/png",
+        });
+
+        await navigator.share({
+          files: [file],
+          title: "Receipt",
+        });
+
+        return;
+      }
+
+      // fallback download
+      const link = document.createElement("a");
+
+      link.href = dataUrl;
+
+      link.download = "receipt.png";
+
+      link.click();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleSelectUser = (participant: Participant) => {
     console.log(participant);
@@ -221,6 +264,132 @@ export default function Receipt({ transaction }: ReceiptProps) {
             });
           }}
         />
+        {/* SCREENSHOT WIDGET */}
+        <div className="rounded-2xl border bg-white p-4 shadow-sm">
+          <div
+            ref={screenshotRef}
+            className="bg-white text-black rounded-xl p-5 hidden"
+            style={{
+              backgroundColor: "#ffffff",
+              color: "#000000",
+            }}
+          >
+            {/* HEADER */}
+            <div className="border-b pb-3">
+              <h2 className="text-xl font-bold">{transaction.place}</h2>
+
+              <p className="text-sm text-gray-500">
+                {new Date(transaction.date).toLocaleDateString()}
+              </p>
+            </div>
+
+            {/* ITEMS */}
+            <div className="mt-4">
+              <h3 className="mb-3 font-semibold">List of Items</h3>
+
+              <div className="space-y-3 text-sm">
+                {receiptItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-start justify-between gap-3"
+                  >
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+
+                      <p className="text-gray-500">
+                        {item.qty} × ₱{item.amount.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <p className="font-semibold">₱{item.subtotal.toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* TOTALS */}
+            <div className="mt-5 border-t pt-4 text-sm">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+
+                <span>₱{transaction.subtotal.toFixed(2)}</span>
+              </div>
+
+              <div className="mt-2 flex justify-between">
+                <span>Service Charge</span>
+
+                <span>₱{(transaction.serviceCharge || 0).toFixed(2)}</span>
+              </div>
+
+              <div className="mt-3 flex justify-between text-base font-bold">
+                <span>Total</span>
+
+                <span>₱{transaction.total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* PARTICIPANTS */}
+            <div className="mt-5 border-t pt-4">
+              <h3 className="mb-3 font-semibold">List of Participants</h3>
+
+              <div className="space-y-4">
+                {participants.map((participant) => {
+                  const participantItems = receiptItems.filter((item) =>
+                    item.assignedTo.includes(participant.id),
+                  );
+
+                  const itemTotal = participantItems.reduce((sum, item) => {
+                    const splitCount = item.assignedTo.length || 1;
+
+                    return sum + item.subtotal / splitCount;
+                  }, 0);
+
+                  const serviceChargeShare =
+                    ((transaction.serviceCharge || 0) * itemTotal) /
+                    transaction.subtotal;
+
+                  const totalToPay = itemTotal + serviceChargeShare;
+
+                  return (
+                    <div key={participant.id}>
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">{participant.name}</p>
+
+                        <p className="font-bold">₱{totalToPay.toFixed(2)}</p>
+                      </div>
+
+                      <div className="mt-2 ml-3 space-y-1 text-sm text-gray-500">
+                        {participantItems.map((item) => (
+                          <p key={item.id}>• {item.name}</p>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* SHARE BUTTON */}
+          <button
+            onClick={handleShareScreenshot}
+            className="
+      mt-4
+      w-full
+      rounded-xl
+      bg-black
+      px-4
+      py-3
+      text-sm
+      font-medium
+      text-white
+      transition
+      hover:opacity-90
+    "
+          >
+            Share as Screenshot
+          </button>
+        </div>
       </div>
     </>
   );
