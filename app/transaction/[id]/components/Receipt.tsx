@@ -64,20 +64,14 @@ export default function Receipt({ transaction }: ReceiptProps) {
   useEffect(() => {
     if (!currentUser) return;
 
-    console.log("CURRENT USER", currentUser);
-
     socket.emit("join-transaction", {
       transactionId: transaction._id,
       participant: currentUser,
     });
 
-    console.log("EMITTED JOIN");
-
     socket.off("transaction-updated");
 
     socket.on("transaction-updated", (updatedData) => {
-      console.log("TRANSACTION UPDATED");
-
       setReceiptItems(updatedData.items);
       setParticipants(updatedData.participants);
     });
@@ -85,9 +79,6 @@ export default function Receipt({ transaction }: ReceiptProps) {
     socket.off("active-users");
 
     socket.on("active-users", (users: Participant[]) => {
-      console.log("ACTIVE USERS EVENT", users);
-
-      console.log("ACTIVE USERS", users);
       setActiveUsers(users);
     });
 
@@ -190,7 +181,13 @@ export default function Receipt({ transaction }: ReceiptProps) {
       )}
 
       <div className="space-y-6">
-        <ActiveUsers users={activeUsers} />
+<ActiveUsers
+  users={[
+    ...new Map(
+      activeUsers.map((user) => [user.id, user]),
+    ).values(),
+  ]}
+/>
 
         <ReceiptHeader transaction={transaction} />
 

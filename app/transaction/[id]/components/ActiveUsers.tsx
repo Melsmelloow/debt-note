@@ -13,7 +13,6 @@ type ActiveUsersProps = {
 };
 
 export default function ActiveUsers({ users }: ActiveUsersProps) {
-    console.log(users)
   const [collapsed, setCollapsed] = useState(false);
 
   return (
