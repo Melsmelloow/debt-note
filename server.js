@@ -1,10 +1,16 @@
 // server.js
 
+import http from "http";
 import { Server } from "socket.io";
 
-const io = new Server(3001, {
+const PORT = process.env.PORT || 3001;
+
+const server = http.createServer();
+
+const io = new Server(server, {
   cors: {
     origin: "*",
+    methods: ["GET", "POST"],
   },
 });
 
@@ -32,7 +38,6 @@ io.on("connection", (socket) => {
 
     console.log("ACTIVE USERS", transactionUsers[transactionId]);
 
-    // emit active users
     io.to(transactionId).emit("active-users", transactionUsers[transactionId]);
 
     socket.on("disconnect", () => {
@@ -52,4 +57,8 @@ io.on("connection", (socket) => {
   socket.on("update-transaction", (data) => {
     socket.to(data.transactionId).emit("transaction-updated", data);
   });
+});
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Socket.IO server running on port ${PORT}`);
 });
