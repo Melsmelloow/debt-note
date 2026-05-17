@@ -14,7 +14,11 @@ const io = new Server(server, {
   },
 });
 
+// transactionId -> users[]
 const transactionUsers = {};
+
+// socketId -> session info
+const socketSessions = {};
 
 io.on("connection", (socket) => {
   console.log("connected", socket.id);
@@ -28,37 +32,46 @@ io.on("connection", (socket) => {
       transactionUsers[transactionId] = [];
     }
 
-    // remove duplicates
+    // remove duplicate participant ids
     transactionUsers[transactionId] = transactionUsers[transactionId].filter(
-      (user) => user._id !== participant._id,
+      (user) => user.id !== participant.id,
     );
 
-    // add current user
+    // add current participant
     transactionUsers[transactionId].push(participant);
+
+    // store socket session
+    socketSessions[socket.id] = {
+      transactionId,
+      participantId: participant.id,
+    };
 
     console.log("ACTIVE USERS", transactionUsers[transactionId]);
 
     io.to(transactionId).emit("active-users", transactionUsers[transactionId]);
+  });
 
-    socket.on("disconnect", () => {
-      console.log("disconnect", socket.id);
+  socket.on("disconnect", () => {
+    console.log("disconnect", socket.id);
 
-      transactionUsers[transactionId] = transactionUsers[transactionId].filter(
-        (user) => user._id !== participant._id,
-      );
+    const session = socketSessions[socket.id];
 
-      io.to(transactionId).emit(
-        "active-users",
-        transactionUsers[transactionId],
-      );
-    });
+    if (!session) return;
+
+    const { transactionId, participantId } = session;
+
+    if (!transactionUsers[transactionId]) return;
+
+    transactionUsers[transactionId] = transactionUsers[transactionId].filter(
+      (user) => user.id !== participantId,
+    );
+
+    io.to(transactionId).emit("active-users", transactionUsers[transactionId]);
+
+    delete socketSessions[socket.id];
   });
 
   socket.on("update-transaction", (data) => {
     socket.to(data.transactionId).emit("transaction-updated", data);
   });
-});
-
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Socket.IO server running on port ${PORT}`);
 });

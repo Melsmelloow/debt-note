@@ -36,7 +36,7 @@ export default function Receipt({ transaction }: ReceiptProps) {
 
     if (storedUserId) {
       const existingUser = transaction.participants.find(
-        (participant) => (participant.id || participant.id) === storedUserId,
+        (participant) => participant.id === storedUserId,
       );
 
       if (existingUser) {
@@ -59,31 +59,32 @@ export default function Receipt({ transaction }: ReceiptProps) {
   };
 
   // realtime listeners
-  useEffect(() => {
-    if (!currentUser) return;
+ useEffect(() => {
+  if (!currentUser) return;
 
-    socket.emit("join-transaction", {
-      transactionId: transaction._id,
+  socket.emit("join-transaction", {
+    transactionId: transaction._id,
+    participant: currentUser,
+  });
 
-      participant: currentUser,
-    });
+  socket.off("transaction-updated");
 
-    socket.on("transaction-updated", (updatedData) => {
-      setReceiptItems(updatedData.items);
+  socket.on("transaction-updated", (updatedData) => {
+    setReceiptItems(updatedData.items);
+    setParticipants(updatedData.participants);
+  });
 
-      setParticipants(updatedData.participants);
-    });
+  socket.off("active-users");
 
-    socket.on("active-users", (users: Participant[]) => {
-      setActiveUsers(users);
-    });
+  socket.on("active-users", (users: Participant[]) => {
+    setActiveUsers(users);
+  });
 
-    return () => {
-      socket.off("transaction-updated");
-
-      socket.off("active-users");
-    };
-  }, [transaction._id, currentUser]);
+  return () => {
+    socket.off("transaction-updated");
+    socket.off("active-users");
+  };
+}, [transaction._id, currentUser]);
 
   const persistTransaction = async (
     updatedItems: TransactionItem[],
@@ -158,7 +159,7 @@ export default function Receipt({ transaction }: ReceiptProps) {
             <div className="mt-4 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
               {participants.map((participant) => (
                 <button
-                  key={participant.id || participant.id}
+                  key={participant.id}
                   onClick={() => handleSelectUser(participant)}
                   className="
               w-full rounded-xl border
