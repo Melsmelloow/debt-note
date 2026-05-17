@@ -24,54 +24,57 @@ io.on("connection", (socket) => {
   console.log("connected", socket.id);
 
   socket.on("join-transaction", ({ transactionId, participant }) => {
-    console.log("join-transaction", transactionId, participant);
-
     socket.join(transactionId);
 
     if (!transactionUsers[transactionId]) {
       transactionUsers[transactionId] = [];
     }
 
-    // remove duplicate participant ids
+    // remove existing same socket only
     transactionUsers[transactionId] = transactionUsers[transactionId].filter(
-      (user) => user.id !== participant.id,
+      (user) => user.socketId !== socket.id,
     );
 
-    // add current participant
-    transactionUsers[transactionId].push(participant);
+    // add socket session
+    transactionUsers[transactionId].push({
+      socketId: socket.id,
+      participant,
+    });
 
-    // store socket session
     socketSessions[socket.id] = {
       transactionId,
-      participantId: participant.id,
     };
 
-    console.log("ACTIVE USERS", transactionUsers[transactionId]);
-
-    io.to(transactionId).emit("active-users", transactionUsers[transactionId]);
+    io.to(transactionId).emit(
+      "active-users",
+      transactionUsers[transactionId].map((user) => user.participant),
+    );
   });
-
   socket.on("disconnect", () => {
-    console.log("disconnect", socket.id);
-
     const session = socketSessions[socket.id];
 
     if (!session) return;
 
-    const { transactionId, participantId } = session;
+    const { transactionId } = session;
 
     if (!transactionUsers[transactionId]) return;
 
     transactionUsers[transactionId] = transactionUsers[transactionId].filter(
-      (user) => user.id !== participantId,
+      (user) => user.socketId !== socket.id,
     );
 
-    io.to(transactionId).emit("active-users", transactionUsers[transactionId]);
+    io.to(transactionId).emit(
+      "active-users",
+      transactionUsers[transactionId].map((user) => user.participant),
+    );
 
     delete socketSessions[socket.id];
   });
-
   socket.on("update-transaction", (data) => {
     socket.to(data.transactionId).emit("transaction-updated", data);
   });
+});
+
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Socket.IO server running on port ${PORT}`);
 });

@@ -41,11 +41,13 @@ export default function Receipt({ transaction }: ReceiptProps) {
 
       if (existingUser) {
         setCurrentUser(existingUser);
+        setShowUserSelector(false);
 
         return;
       }
     }
 
+    // no valid stored user
     setShowUserSelector(true);
   }, [transaction]);
 
@@ -59,32 +61,41 @@ export default function Receipt({ transaction }: ReceiptProps) {
   };
 
   // realtime listeners
- useEffect(() => {
-  if (!currentUser) return;
+  useEffect(() => {
+    if (!currentUser) return;
 
-  socket.emit("join-transaction", {
-    transactionId: transaction._id,
-    participant: currentUser,
-  });
+    console.log("CURRENT USER", currentUser);
 
-  socket.off("transaction-updated");
+    socket.emit("join-transaction", {
+      transactionId: transaction._id,
+      participant: currentUser,
+    });
 
-  socket.on("transaction-updated", (updatedData) => {
-    setReceiptItems(updatedData.items);
-    setParticipants(updatedData.participants);
-  });
+    console.log("EMITTED JOIN");
 
-  socket.off("active-users");
-
-  socket.on("active-users", (users: Participant[]) => {
-    setActiveUsers(users);
-  });
-
-  return () => {
     socket.off("transaction-updated");
+
+    socket.on("transaction-updated", (updatedData) => {
+      console.log("TRANSACTION UPDATED");
+
+      setReceiptItems(updatedData.items);
+      setParticipants(updatedData.participants);
+    });
+
     socket.off("active-users");
-  };
-}, [transaction._id, currentUser]);
+
+    socket.on("active-users", (users: Participant[]) => {
+      console.log("ACTIVE USERS EVENT", users);
+
+      console.log("ACTIVE USERS", users);
+      setActiveUsers(users);
+    });
+
+    return () => {
+      socket.off("transaction-updated");
+      socket.off("active-users");
+    };
+  }, [transaction._id, currentUser]);
 
   const persistTransaction = async (
     updatedItems: TransactionItem[],

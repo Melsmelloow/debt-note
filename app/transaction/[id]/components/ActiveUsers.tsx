@@ -13,9 +13,8 @@ type ActiveUsersProps = {
 };
 
 export default function ActiveUsers({ users }: ActiveUsersProps) {
+    console.log(users)
   const [collapsed, setCollapsed] = useState(false);
-
-  if (users.length === 0) return null;
 
   return (
     <div
@@ -95,93 +94,101 @@ export default function ActiveUsers({ users }: ActiveUsersProps) {
               className="overflow-hidden"
             >
               <div className="px-3 pb-3 sm:px-4 sm:pb-4">
-                <div className="max-h-[220px] space-y-1.5 overflow-y-auto sm:space-y-2">
-                  <AnimatePresence>
-                    {users.map((user) => (
-                      <motion.div
-                        key={user.id}
-                        initial={{
-                          opacity: 0,
-                          x: 20,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          x: 0,
-                        }}
-                        exit={{
-                          opacity: 0,
-                          x: 20,
-                        }}
-                        transition={{
-                          duration: 0.2,
-                        }}
-                        className="
-                          flex items-center justify-between
-                          rounded-xl border border-border
-                          bg-muted/30
-                          px-2.5 py-2
+                <div className="max-h-[220px] overflow-y-auto">
+                  {users.length === 0 ? (
+                    <div className="py-4 text-center text-xs text-muted-foreground">
+                      No active participants
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <AnimatePresence>
+                        {users.map((user) => (
+                          <motion.div
+                            key={user.id}
+                            initial={{
+                              opacity: 0,
+                              x: 20,
+                            }}
+                            animate={{
+                              opacity: 1,
+                              x: 0,
+                            }}
+                            exit={{
+                              opacity: 0,
+                              x: 20,
+                            }}
+                            transition={{
+                              duration: 0.2,
+                            }}
+                            className="
+                              flex items-center justify-between
+                              rounded-xl border border-border
+                              bg-muted/30
+                              px-2.5 py-2
 
-                          sm:px-3
-                        "
-                      >
-                        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                          <div className="relative shrink-0">
-                            <div
-                              className="
-                                flex items-center justify-center
-                                rounded-full
-                                bg-primary/10
-                                text-xs font-semibold
+                              sm:px-3
+                            "
+                          >
+                            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                              <div className="relative shrink-0">
+                                <div
+                                  className="
+                                    flex items-center justify-center
+                                    rounded-full
+                                    bg-primary/10
+                                    text-xs font-semibold
 
-                                h-8 w-8
-                                sm:h-9 sm:w-9
-                                sm:text-sm
-                              "
-                            >
-                              {user.name.charAt(0).toUpperCase()}
+                                    h-8 w-8
+                                    sm:h-9 sm:w-9
+                                    sm:text-sm
+                                  "
+                                >
+                                  {user.name.charAt(0).toUpperCase()}
+                                </div>
+
+                                <span
+                                  className="
+                                    absolute bottom-0 right-0
+                                    h-2.5 w-2.5
+                                    rounded-full
+                                    border-2 border-card
+                                    bg-green-500
+                                  "
+                                />
+                              </div>
+
+                              <div className="min-w-0">
+                                <p className="truncate text-xs font-medium sm:text-sm">
+                                  {user.name}
+                                </p>
+
+                                <p
+                                  className="
+                                    text-[10px]
+                                    text-muted-foreground
+                                    sm:text-xs
+                                  "
+                                >
+                                  Viewing receipt
+                                </p>
+                              </div>
                             </div>
 
-                            <span
+                            <div
                               className="
-                                absolute bottom-0 right-0
-                                h-2.5 w-2.5
-                                rounded-full
-                                border-2 border-card
-                                bg-green-500
-                              "
-                            />
-                          </div>
-
-                          <div className="min-w-0">
-                            <p className="truncate text-xs font-medium sm:text-sm">
-                              {user.name}
-                            </p>
-
-                            <p
-                              className="
+                                hidden sm:block
                                 text-[10px]
-                                text-muted-foreground
-                                sm:text-xs
+                                uppercase tracking-wider
+                                text-green-500
                               "
                             >
-                              Viewing receipt
-                            </p>
-                          </div>
-                        </div>
-
-                        <div
-                          className="
-                            hidden sm:block
-                            text-[10px]
-                            uppercase tracking-wider
-                            text-green-500
-                          "
-                        >
-                          LIVE
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                              LIVE
+                            </div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
