@@ -36,7 +36,7 @@ export default function PaymentSection({
   setServiceCharge,
 }: PaymentSectionProps) {
   const selectedParticipant = participants.find(
-    (participant) => participant._id === payToParticipantId,
+    (participant) => participant.id === payToParticipantId,
   );
 
   return (
@@ -112,7 +112,7 @@ export default function PaymentSection({
                   <option value="">Select participant</option>
 
                   {participants.map((participant) => (
-                    <option key={participant._id} value={participant._id}>
+                    <option key={participant.id} value={participant.id}>
                       {participant.name || "Unnamed"}
                     </option>
                   ))}

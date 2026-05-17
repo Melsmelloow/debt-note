@@ -39,7 +39,7 @@ export default function ReceiptItems({
   const toggleParticipant = (itemId: string, participantId: string) => {
     setItems((prev) =>
       prev.map((item) => {
-        if (item._id !== itemId) return item;
+        if (item.id !== itemId) return item;
 
         const alreadyAssigned = item.assignedTo.includes(participantId);
 
@@ -56,7 +56,7 @@ export default function ReceiptItems({
   console.log(items);
 
   const getParticipantName = (id: string) => {
-    return participants.find((p) => p._id === id)?.name;
+    return participants.find((p) => p.id === id)?.name;
   };
 
   return (
@@ -72,7 +72,7 @@ export default function ReceiptItems({
       <div className="space-y-4">
         {items.map((item) => (
           <div
-            key={item._id + item.name}
+            key={item.id + item.name}
             className="rounded-xl border border-border bg-background/40 p-4"
           >
             <div className="flex items-start justify-between gap-4">
@@ -82,7 +82,7 @@ export default function ReceiptItems({
                 <div className="mt-3 flex flex-wrap gap-2">
                   {item.assignedTo.map((participantId) => (
                     <Badge
-                      key={`${item._id}-${participantId}`}
+                      key={`${item.id}-${participantId}`}
                       variant="secondary"
                       className="flex items-center gap-1"
                     >
@@ -90,7 +90,7 @@ export default function ReceiptItems({
 
                       <button
                         onClick={() =>
-                          toggleParticipant(item._id, participantId)
+                          toggleParticipant(item.id, participantId)
                         }
                         className="ml-1 rounded-full hover:bg-black/10"
                       >
@@ -117,14 +117,14 @@ export default function ReceiptItems({
                           <CommandGroup>
                             {participants.map((participant) => {
                               const selected = item.assignedTo.includes(
-                                participant._id,
+                                participant.id,
                               );
 
                               return (
                                 <CommandItem
-                                  key={participant._id + participant.name}
+                                  key={participant.id + participant.name}
                                   onSelect={() =>
-                                    toggleParticipant(item._id, participant._id)
+                                    toggleParticipant(item.id, participant.id)
                                   }
                                   className="flex items-center justify-between"
                                 >

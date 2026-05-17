@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export type ParticipantInput = {
-  _id: string;
+  id: string;
   name: string;
 };
 
@@ -27,7 +27,7 @@ export default function ParticipantsInput({
     setParticipants((prev) => [
       ...prev,
       {
-        _id: crypto.randomUUID(),
+        id: crypto.randomUUID(),
         name: "",
       },
     ]);
@@ -36,7 +36,7 @@ export default function ParticipantsInput({
   const updateParticipant = (_id: string, value: string) => {
     setParticipants((prev) =>
       prev.map((participant) =>
-        participant._id === _id
+        participant.id === _id
           ? {
               ...participant,
               name: value,
@@ -48,7 +48,7 @@ export default function ParticipantsInput({
 
   const removeParticipant = (_id: string) => {
     setParticipants((prev) =>
-      prev.filter((participant) => participant._id !== _id),
+      prev.filter((participant) => participant.id !== _id),
     );
   };
 
@@ -77,7 +77,7 @@ export default function ParticipantsInput({
       <div className="mt-6 space-y-4">
         {participants.map((participant, index) => (
           <div
-            key={participant._id}
+            key={participant.id}
             className="
                 rounded-2xl
                 border
@@ -121,7 +121,7 @@ export default function ParticipantsInput({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => removeParticipant(participant._id)}
+                onClick={() => removeParticipant(participant.id)}
                 className="
                   text-red-400
                   hover:bg-red-500/10
@@ -141,7 +141,7 @@ export default function ParticipantsInput({
                 placeholder="Mel"
                 value={participant.name}
                 onChange={(e) =>
-                  updateParticipant(participant._id, e.target.value)
+                  updateParticipant(participant.id, e.target.value)
                 }
               />
             </div>

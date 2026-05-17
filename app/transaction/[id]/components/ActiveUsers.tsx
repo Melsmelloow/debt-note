@@ -9,11 +9,8 @@ type ActiveUsersProps = {
   users: Participant[];
 };
 
-export default function ActiveUsers({
-  users,
-}: ActiveUsersProps) {
-
-    console.log(users)
+export default function ActiveUsers({ users }: ActiveUsersProps) {
+  console.log(users);
   if (users.length === 0) return null;
 
   return (
@@ -25,9 +22,7 @@ export default function ActiveUsers({
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold">
-              Live Participants
-            </h3>
+            <h3 className="text-sm font-semibold">Live Participants</h3>
 
             <p className="text-xs text-muted-foreground">
               {users.length} active now
@@ -39,7 +34,7 @@ export default function ActiveUsers({
           <AnimatePresence>
             {users.map((user) => (
               <motion.div
-                key={user._id}
+                key={user.id}
                 initial={{
                   opacity: 0,
                   x: 20,
@@ -67,9 +62,7 @@ export default function ActiveUsers({
                   </div>
 
                   <div>
-                    <p className="text-sm font-medium">
-                      {user.name}
-                    </p>
+                    <p className="text-sm font-medium">{user.name}</p>
 
                     <p className="text-xs text-muted-foreground">
                       Viewing receipt

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export type ItemInput = {
-  _id: string;
+  id: string;
 
   name: string;
 
@@ -28,7 +28,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
     setItems((prev) => [
       ...prev,
       {
-        _id: crypto.randomUUID(),
+        id: crypto.randomUUID(),
 
         name: "",
 
@@ -45,7 +45,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
   ) => {
     setItems((prev) =>
       prev.map((item) =>
-        item._id === _id
+        item.id === _id
           ? {
               ...item,
               [field]: value,
@@ -56,7 +56,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
   };
 
   const removeItem = (_id: string) => {
-    setItems((prev) => prev.filter((item) => item._id !== _id));
+    setItems((prev) => prev.filter((item) => item.id !== _id));
   };
 
   return (
@@ -82,7 +82,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
 
           return (
             <div
-              key={item._id}
+              key={item.id}
               className="
                 rounded-2xl
                 border
@@ -108,7 +108,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => removeItem(item._id)}
+                  onClick={() => removeItem(item.id)}
                   className="
                     text-red-400
                     hover:bg-red-500/10
@@ -128,7 +128,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
                     placeholder="Kebab Platter"
                     value={item.name}
                     onChange={(e) =>
-                      updateItem(item._id, "name", e.target.value)
+                      updateItem(item.id, "name", e.target.value)
                     }
                   />
                 </div>
@@ -142,7 +142,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
                     min={1}
                     value={item.qty}
                     onChange={(e) =>
-                      updateItem(item._id, "qty", Number(e.target.value))
+                      updateItem(item.id, "qty", Number(e.target.value))
                     }
                   />
                 </div>
@@ -156,7 +156,7 @@ export default function ItemsInput({ items, setItems }: ItemsInputProps) {
                     min={0}
                     value={item.amount}
                     onChange={(e) =>
-                      updateItem(item._id, "amount", Number(e.target.value))
+                      updateItem(item.id, "amount", Number(e.target.value))
                     }
                   />
                 </div>

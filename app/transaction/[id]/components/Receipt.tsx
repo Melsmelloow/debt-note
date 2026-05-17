@@ -1,5 +1,3 @@
-// app/transaction/[id]/components/Receipt.tsx
-
 "use client";
 
 import debounce from "lodash/debounce";
@@ -23,13 +21,14 @@ export default function Receipt({ transaction }: ReceiptProps) {
 
   const [participants, setParticipants] = useState(transaction.participants);
 
-  // connected users
   const [activeUsers, setActiveUsers] = useState<Participant[]>([]);
 
-  // current user
   const [currentUser, setCurrentUser] = useState<Participant | null>(null);
 
-  // ask/select participant on first visit
+  const [showUserSelector, setShowUserSelector] = useState(false);
+
+  console.log(participants);
+  // load current user
   useEffect(() => {
     const storedUserId = localStorage.getItem(
       `transaction-user-${transaction._id}`,
@@ -37,7 +36,7 @@ export default function Receipt({ transaction }: ReceiptProps) {
 
     if (storedUserId) {
       const existingUser = transaction.participants.find(
-        (participant) => participant._id === storedUserId,
+        (participant) => (participant.id || participant.id) === storedUserId,
       );
 
       if (existingUser) {
@@ -47,34 +46,19 @@ export default function Receipt({ transaction }: ReceiptProps) {
       }
     }
 
-    const participantNames = transaction.participants
-      .map((participant, index) => {
-        return `${index + 1}. ${participant.name}`;
-      })
-      .join("\n");
-
-    const selected = window.prompt(
-      `Who are you?\n\n${participantNames}\n\nEnter participant name exactly:`,
-    );
-
-    if (!selected) return;
-
-    const matchedParticipant = transaction.participants.find(
-      (participant) =>
-        participant.name.toLowerCase() === selected.toLowerCase(),
-    );
-
-    if (matchedParticipant) {
-      localStorage.setItem(
-        `transaction-user-${transaction._id}`,
-        matchedParticipant._id,
-      );
-
-      setCurrentUser(matchedParticipant);
-    }
+    setShowUserSelector(true);
   }, [transaction]);
 
-  // listen realtime updates
+  const handleSelectUser = (participant: Participant) => {
+    console.log(participant);
+    localStorage.setItem(`transaction-user-${transaction._id}`, participant.id);
+
+    setCurrentUser(participant);
+
+    setShowUserSelector(false);
+  };
+
+  // realtime listeners
   useEffect(() => {
     if (!currentUser) return;
 
@@ -101,9 +85,6 @@ export default function Receipt({ transaction }: ReceiptProps) {
     };
   }, [transaction._id, currentUser]);
 
-  console.log(activeUsers);
-
-  // persist to database
   const persistTransaction = async (
     updatedItems: TransactionItem[],
     updatedParticipants: Participant[],
@@ -126,7 +107,6 @@ export default function Receipt({ transaction }: ReceiptProps) {
     }
   };
 
-  // debounce db updates
   const debouncedPersist = useMemo(
     () =>
       debounce(
@@ -141,14 +121,12 @@ export default function Receipt({ transaction }: ReceiptProps) {
     [transaction._id],
   );
 
-  // cleanup debounce
   useEffect(() => {
     return () => {
       debouncedPersist.cancel();
     };
   }, [debouncedPersist]);
 
-  // realtime updater
   const updateTransaction = (
     updatedItems: TransactionItem[],
     updatedParticipants: Participant[],
@@ -165,44 +143,78 @@ export default function Receipt({ transaction }: ReceiptProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* ACTIVE USERS */}
-      <ActiveUsers users={activeUsers} />
+    <>
+      {/* USER SELECTOR MODAL */}
+      {showUserSelector && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl">
+            <h2 className="text-lg font-bold">Select Your Name</h2>
 
-      <ReceiptHeader transaction={transaction} />
+            <p className="mt-1 text-sm text-gray-500">
+              Choose your participant identity
+            </p>
 
-      <ReceiptItems
-        items={receiptItems}
-        participants={participants}
-        setItems={(items) => {
-          setReceiptItems((prev) => {
-            const updatedItems =
-              typeof items === "function" ? items(prev) : items;
+            {/* SCROLLABLE LIST */}
+            <div className="mt-4 max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+              {participants.map((participant) => (
+                <button
+                  key={participant.id || participant.id}
+                  onClick={() => handleSelectUser(participant)}
+                  className="
+              w-full rounded-xl border
+              px-4 py-3
+              text-left text-sm font-medium
+              transition
+              hover:bg-gray-100
+              active:scale-[0.98]
+            "
+                >
+                  {participant.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
-            updateTransaction(updatedItems, participants);
+      <div className="space-y-6">
+        <ActiveUsers users={activeUsers} />
 
-            return updatedItems;
-          });
-        }}
-      />
+        <ReceiptHeader transaction={transaction} />
 
-      <ReceiptTotals transaction={transaction} />
+        <ReceiptItems
+          items={receiptItems}
+          participants={participants}
+          setItems={(items) => {
+            setReceiptItems((prev) => {
+              const updatedItems =
+                typeof items === "function" ? items(prev) : items;
 
-      <ParticipantBreakdown
-        transaction={transaction}
-        items={receiptItems}
-        participants={participants}
-        setParticipants={(value) => {
-          setParticipants((prev) => {
-            const updatedParticipants =
-              typeof value === "function" ? value(prev) : value;
+              updateTransaction(updatedItems, participants);
 
-            updateTransaction(receiptItems, updatedParticipants);
+              return updatedItems;
+            });
+          }}
+        />
 
-            return updatedParticipants;
-          });
-        }}
-      />
-    </div>
+        <ReceiptTotals transaction={transaction} />
+
+        <ParticipantBreakdown
+          transaction={transaction}
+          items={receiptItems}
+          participants={participants}
+          setParticipants={(value) => {
+            setParticipants((prev) => {
+              const updatedParticipants =
+                typeof value === "function" ? value(prev) : value;
+
+              updateTransaction(receiptItems, updatedParticipants);
+
+              return updatedParticipants;
+            });
+          }}
+        />
+      </div>
+    </>
   );
 }

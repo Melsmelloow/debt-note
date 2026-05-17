@@ -24,15 +24,14 @@ export default function CreateTransactionPage() {
 
   const [participants, setParticipants] = useState<ParticipantInput[]>([
     {
-      _id: crypto.randomUUID(),
+      id: crypto.randomUUID(),
       name: "",
     },
   ]);
 
   const [items, setItems] = useState<ItemInput[]>([
     {
-      _id: crypto.randomUUID(),
-
+      id: crypto.randomUUID(),
       name: "",
 
       qty: 1,

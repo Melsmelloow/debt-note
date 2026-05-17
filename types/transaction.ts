@@ -19,12 +19,12 @@ export type Transaction = {
 };
 
 export type Participant = {
-  _id: string;
+  id: string;
   name: string;
   hasPaid?: boolean;
 };
 export type TransactionItem = {
-  _id: string;
+  id: string;
 
   name: string;
 
