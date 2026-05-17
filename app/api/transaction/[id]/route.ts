@@ -1,24 +1,28 @@
 // app/api/transaction/[id]/route.ts
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { connectDB } from "@/lib/mongodb";
 import { Transaction } from "@/models/Transactions";
 
-type Params = {
-  params: {
+type RouteContext = {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 // GET SINGLE TRANSACTION
-export async function GET(req: Request, { params }: Params) {
+export async function GET(
+  req: NextRequest,
+  context: RouteContext,
+) {
   try {
     await connectDB();
 
-    const transaction = await Transaction.findById(params.id);
+    const { id } = await context.params;
 
-    console.log(transaction);
+    const transaction = await Transaction.findById(id);
+
     if (!transaction) {
       return NextResponse.json(
         {
@@ -45,21 +49,21 @@ export async function GET(req: Request, { params }: Params) {
   }
 }
 
-export async function PATCH(req: Request, { params }: Params) {
+export async function PATCH(
+  req: NextRequest,
+  context: RouteContext,
+) {
   try {
     await connectDB();
 
-    const { id } = await params;
+    const { id } = await context.params;
 
     const body = await req.json();
 
-    const updatedTransaction = await Transaction.findByIdAndUpdate(
-      id,
-      body,
-      {
+    const updatedTransaction =
+      await Transaction.findByIdAndUpdate(id, body, {
         new: true,
-      },
-    );
+      });
 
     return NextResponse.json(updatedTransaction);
   } catch (error) {
